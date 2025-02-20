@@ -4,7 +4,7 @@ resource "aws_ecs_cluster" "main" {
 }
 
 resource "aws_ecs_task_definition" "tbs-frontend" {
-  family = "${local.name_prefix}-frontend"
+  family                   = "${local.name_prefix}-frontend"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
@@ -12,7 +12,7 @@ resource "aws_ecs_task_definition" "tbs-frontend" {
   memory                   = "512"
   container_definitions = jsonencode([{
     name   = "${local.name_prefix}-nginx-def"
-    image  = "nginx:latest"
+    image  = "${var.front-end-image}:latest"
     memory = 512
     cpu    = 256
     portMappings = [{
@@ -24,7 +24,7 @@ resource "aws_ecs_task_definition" "tbs-frontend" {
 }
 
 resource "aws_ecs_task_definition" "tbs-middle" {
-  family = "${local.name_prefix}-middle-tier"
+  family                   = "${local.name_prefix}-middle-tier"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
@@ -32,7 +32,7 @@ resource "aws_ecs_task_definition" "tbs-middle" {
   memory                   = "512"
   container_definitions = jsonencode([{
     name   = "${local.name_prefix}-springboot-def"
-    image  = "springboot:latest"
+    image  = "${var.cache-image}:latest"
     memory = 512
     cpu    = 256
     portMappings = [{
@@ -44,7 +44,7 @@ resource "aws_ecs_task_definition" "tbs-middle" {
 }
 
 resource "aws_ecs_task_definition" "tbs-backend" {
-  family = "${local.name_prefix}-redis-cache"
+  family                   = "${local.name_prefix}-redis-cache"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
@@ -52,7 +52,7 @@ resource "aws_ecs_task_definition" "tbs-backend" {
   memory                   = "512"
   container_definitions = jsonencode([{
     name   = "${local.name_prefix}-redis-def"
-    image  = "redis:latest"
+    image  = "${var.back-end-image}:latest"
     memory = 512
     cpu    = 256
     portMappings = [{

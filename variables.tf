@@ -11,7 +11,7 @@ variable "service" {
 }
 
 variable "vpc_cidr" {
-  type = string
+  type    = string
   default = ""
 }
 
@@ -43,3 +43,9 @@ variable "keypair" {
   type    = string
   default = "LinuxKeyPair"
 }
+
+variable "front-end-image" {}
+
+variable "back-end-image" {}
+
+variable "cache-image" {}
