@@ -50,6 +50,12 @@ resource "aws_route_table_association" "private-rt-assctn" {
 
 }
 
+# resource "aws_route_table_association" "private" {
+#   count          = length(aws_subnet.private[*].id)
+#   subnet_id      = aws_subnet.private[count.index].id
+#   route_table_id = aws_route_table.tbs-private-rt.id
+# }
+
 resource "aws_nat_gateway" "tbs-natgw" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public[0].id
