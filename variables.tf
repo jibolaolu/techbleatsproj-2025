@@ -49,3 +49,7 @@ variable "front-end-image" {}
 variable "back-end-image" {}
 
 variable "cache-image" {}
+variable "domain_name" {}
+variable "subdomain" {}
+
+variable "squid-image" {}
