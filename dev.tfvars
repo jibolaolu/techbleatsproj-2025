@@ -7,5 +7,7 @@ cache-image          = "100753669199.dkr.ecr.eu-west-2.amazonaws.com/teach-bleat
 back-end-image       = "100753669199.dkr.ecr.eu-west-2.amazonaws.com/tech-bleats-backend"
 front-end-image      = "100753669199.dkr.ecr.eu-west-2.amazonaws.com/tech-bleats-frontend"
 squid-image          = "100753669199.dkr.ecr.eu-west-2.amazonaws.com/squid"
+prometheus-image     = "100753669199.dkr.ecr.eu-west-2.amazonaws.com/prometheus"
+grafana_image        = "100753669199.dkr.ecr.eu-west-2.amazonaws.com/grafana"
 domain_name          = "eaglesoncloude.com"
 subdomain            = "techbleats"

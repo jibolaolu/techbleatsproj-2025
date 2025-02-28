@@ -53,3 +53,5 @@ variable "domain_name" {}
 variable "subdomain" {}
 
 variable "squid-image" {}
+variable "prometheus-image" {}
+variable "grafana_image" {}

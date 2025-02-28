@@ -10,6 +10,7 @@ resource "aws_iam_role" "tbs_ecs_task_execution_role" {
       Action = "sts:AssumeRole"
     }]
   })
+  tags = merge(local.common_tags, { Name = "${local.name_prefix}-exec-role" })
 }
 
 
@@ -49,6 +50,16 @@ resource "aws_iam_policy" "ecs_exec_policy" {
           "ecr:BatchGetImage"
         ]
         Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ]
+        Resource = "*"
       }
 
 
@@ -74,6 +85,7 @@ resource "aws_iam_role" "ecs_task_role" {
       Action = "sts:AssumeRole"
     }]
   })
+  tags = merge(local.common_tags, { Name = "${local.name_prefix}-grafana" })
 }
 
 resource "aws_iam_policy" "ecs_task_role_policy" {

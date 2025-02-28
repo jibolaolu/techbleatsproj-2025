@@ -1,3 +1,10 @@
+resource "aws_nat_gateway" "tbs-natgw" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public[0].id
+
+  tags = merge(local.common_tags, { Name = "${local.name_prefix}-NatGateway" })
+}
+
 resource "aws_subnet" "public" {
   count                   = 3
   vpc_id                  = aws_vpc.main.id
@@ -35,13 +42,17 @@ resource "aws_route_table_association" "public-rt-assctn" {
 
 resource "aws_route_table" "tbs-private-rt" {
   vpc_id = aws_vpc.main.id
-  tags   = merge(local.common_tags, { Name = "${local.name_prefix}-private-RT" })
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.tbs-natgw.id
+  }
+  tags = merge(local.common_tags, { Name = "${local.name_prefix}-private-RT" })
 }
 
 resource "aws_route_table_association" "private-rt-assctn" {
   count          = 3
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.tbs-private-rt.id
-
 }
 

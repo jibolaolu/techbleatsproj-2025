@@ -69,16 +69,16 @@ resource "aws_lb_listener_rule" "backend_rule" {
   }
 }
 
-resource "aws_lb_listener" "grafana_listener" {
-  load_balancer_arn = aws_lb.tcs-alb.arn
-  port              = 3000
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.grafana.arn
-  }
-}
+# resource "aws_lb_listener" "grafana_listener" {
+#   load_balancer_arn = aws_lb.tcs-alb.arn
+#   port              = 80
+#   protocol          = "HTTP"
+#
+#   default_action {
+#     type             = "forward"
+#     target_group_arn = aws_lb_target_group.grafana.arn
+#   }
+# }
 
 resource "aws_lb_target_group" "grafana" {
   name        = "grafana-tg"
@@ -88,7 +88,7 @@ resource "aws_lb_target_group" "grafana" {
   target_type = "ip"
 
   health_check {
-    path                = "/"
+    path                = "/api/health"
     interval            = 30
     timeout             = 5
     healthy_threshold   = 2
@@ -97,12 +97,12 @@ resource "aws_lb_target_group" "grafana" {
 }
 
 resource "aws_lb_listener_rule" "grafana" {
-  listener_arn = aws_lb_listener.grafana_listener.arn
-  priority     = 200
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 120
 
   condition {
-    host_header {
-      values = ["grafana.example.com"]
+    path_pattern {
+      values = ["/grafana*"]  # ✅ Use path-based routing
     }
   }
   action {
@@ -110,7 +110,4 @@ resource "aws_lb_listener_rule" "grafana" {
     target_group_arn = aws_lb_target_group.grafana.arn
   }
 }
-
-
-
 
