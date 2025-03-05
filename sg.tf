@@ -64,16 +64,6 @@ resource "aws_security_group_rule" "backend_ingress_frontend" {
   description       = "Allow frontend traffic"
 }
 
-resource "aws_security_group_rule" "backend_egress_vpc_endpoints" {
-  type              = "egress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  security_group_id = aws_security_group.backend_sg.id
-  cidr_blocks       = ["0.0.0.0/0"]
-  description       = "Allow outbound HTTPS to AWS PrivateLink"
-}
-
 
 resource "aws_security_group_rule" "backend_egress_prometheus" {
   type              = "egress"

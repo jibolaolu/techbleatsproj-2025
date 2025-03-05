@@ -82,6 +82,7 @@ resource "aws_ecs_task_definition" "grafana" {
         {
           containerPort = 3000
           hostPort      = 3000
+          protocol      = "tcp"
         }
       ]
       environment = [
