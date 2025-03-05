@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        AWS_REGION = 'us-east-1'  // Change to your AWS region
+        AWS_REGION = 'eu-west-2'  // Change to your AWS region
         TERRAFORM_DIR = 'terraform/'  // Change to the directory containing your Terraform code
     }
 
@@ -18,10 +18,16 @@ pipeline {
 
         stage('Initialize Terraform') {
             steps {
-                script {
-                    dir(TERRAFORM_DIR) {
-                        echo 'Initializing Terraform...'
-                        sh 'terraform init'
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                    script {
+                        dir(TERRAFORM_DIR) {
+                            echo 'Initializing Terraform...'
+                            sh '''
+                                export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+                                export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+                                terraform init
+                            '''
+                        }
                     }
                 }
             }
@@ -29,10 +35,16 @@ pipeline {
 
         stage('Terraform Plan') {
             steps {
-                script {
-                    dir(TERRAFORM_DIR) {
-                        echo 'Running Terraform Plan...'
-                        sh 'terraform plan -out=tfplan'
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                    script {
+                        dir(TERRAFORM_DIR) {
+                            echo 'Running Terraform Plan...'
+                            sh '''
+                                export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+                                export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+                                terraform plan -out=tfplan
+                            '''
+                        }
                     }
                 }
             }
@@ -57,10 +69,16 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                script {
-                    dir(TERRAFORM_DIR) {
-                        echo 'Applying Terraform changes...'
-                        sh 'terraform apply -auto-approve tfplan'
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                    script {
+                        dir(TERRAFORM_DIR) {
+                            echo 'Applying Terraform changes...'
+                            sh '''
+                                export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+                                export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+                                terraform apply -auto-approve tfplan
+                            '''
+                        }
                     }
                 }
             }
