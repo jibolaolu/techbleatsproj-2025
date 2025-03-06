@@ -100,7 +100,7 @@ pipeline {
 
     environment {
         AWS_REGION = 'eu-west-2'  // Change to your AWS region
-        TERRAFORM_DIR = 'terraform/'  // Change to the directory containing your Terraform code
+        TERRAFORM_DIR = 'terraform/'  // Ensure Terraform directory exists
     }
 
     stages {
@@ -111,7 +111,7 @@ pipeline {
                     checkout([$class: 'GitSCM',
                         branches: [[name: '*/master']],
                         userRemoteConfigs: [[
-                            credentialsId: 'github-credentials',  // Ensure this matches stored Jenkins credentials
+                            //credentialsId: 'github-credentials',  // Ensure GitHub credentials exist
                             url: 'https://github.com/jibolaolu/techbleatsproj-2025.git'
                         ]]
                     ])
@@ -130,7 +130,7 @@ pipeline {
                     script {
                         dir(TERRAFORM_DIR) {
                             echo 'Initializing Terraform...'
-                            terraformInit()
+                            terraform init
                         }
                     }
                 }
@@ -142,7 +142,7 @@ pipeline {
                 script {
                     dir(TERRAFORM_DIR) {
                         echo 'Validating Terraform configuration...'
-                        terraformValidate()
+                        terraform validate
                     }
                 }
             }
@@ -159,7 +159,7 @@ pipeline {
                     script {
                         dir(TERRAFORM_DIR) {
                             echo 'Running Terraform Plan...'
-                            terraformPlan(directory: "${TERRAFORM_DIR}", workspace: 'default', planFile: 'tfplan', varsFile: 'dev.tfvars')
+                            terraform plan -var-file="dev.tfvars" -out=tfplan
                         }
                     }
                 }
@@ -194,7 +194,7 @@ pipeline {
                     script {
                         dir(TERRAFORM_DIR) {
                             echo 'Applying Terraform changes...'
-                            terraformApply(directory: "${TERRAFORM_DIR}", planFile: 'tfplan')
+                            terraform apply -auto-approve -var-file="dev.tfvars" tfplan
                         }
                     }
                 }
@@ -211,5 +211,6 @@ pipeline {
         }
     }
 }
+
 
 
