@@ -100,7 +100,7 @@ pipeline {
 
     environment {
         AWS_REGION = 'eu-west-2'  // Change to your AWS region
-        TERRAFORM_DIR = 'terraform/'  // Ensure Terraform directory exists
+        TERRAFORM_DIR = '/'  // Ensure Terraform directory exists
     }
 
     stages {
@@ -223,7 +223,4 @@ pipeline {
         }
     }
 }
-
-
-
 
