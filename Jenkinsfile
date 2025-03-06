@@ -100,24 +100,23 @@ pipeline {
 
     environment {
         AWS_REGION = 'eu-west-2'  // Change to your AWS region
-        TERRAFORM_DIR = './terraform/'  // Change to the directory containing your Terraform code
+        //TERRAFORM_DIR = './terraform/'  // Change to the directory containing your Terraform code
     }
 
     stages {
-//         stage('Checkout Code') {
-//             steps {
-//                 script {
-//                     echo 'Checking out source code...'
-//                     checkout([$class: 'GitSCM',
-//                         branches: [[name: '*/master']],
-//                         userRemoteConfigs: [[
-//                             credentialsId: 'github-credentials',  // Ensure this matches the stored Jenkins credentials
-//                             url: 'https://github.com/jibolaolu/techbleatsproj-2025.git'
-//                         ]]
-//                     ])
-//                 }
-//             }
-//         }
+        stage('Checkout Code') {
+            steps {
+                script {
+                    echo 'Checking out source code...'
+                    checkout([$class: 'GitSCM',
+                        branches: [[name: '*/master']],
+                        userRemoteConfigs: [[
+                            url: 'https://github.com/jibolaolu/techbleatsproj-2025.git'
+                        ]]
+                    ])
+                }
+            }
+        }
 
         stage('Initialize Terraform') {
             steps {
