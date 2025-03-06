@@ -100,7 +100,7 @@ pipeline {
 
     environment {
         AWS_REGION = 'eu-west-2'  // Change to your AWS region
-        //TERRAFORM_DIR = './terraform/'  // Change to the directory containing your Terraform code
+        TERRAFORM_DIR = 'terraform/'  // Change to the directory containing your Terraform code
     }
 
     stages {
@@ -111,6 +111,7 @@ pipeline {
                     checkout([$class: 'GitSCM',
                         branches: [[name: '*/master']],
                         userRemoteConfigs: [[
+                            credentialsId: 'github-credentials',  // Ensure this matches stored Jenkins credentials
                             url: 'https://github.com/jibolaolu/techbleatsproj-2025.git'
                         ]]
                     ])
@@ -129,12 +130,19 @@ pipeline {
                     script {
                         dir(TERRAFORM_DIR) {
                             echo 'Initializing Terraform...'
-                            sh """
-                                export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
-                                export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
-                                terraform init
-                            """
+                            terraformInit()
                         }
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Validate') {
+            steps {
+                script {
+                    dir(TERRAFORM_DIR) {
+                        echo 'Validating Terraform configuration...'
+                        terraformValidate()
                     }
                 }
             }
@@ -151,11 +159,7 @@ pipeline {
                     script {
                         dir(TERRAFORM_DIR) {
                             echo 'Running Terraform Plan...'
-                            sh """
-                                export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
-                                export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
-                                terraform plan -var-file=dev.tfvars -out=tfplan
-                            """
+                            terraformPlan(directory: "${TERRAFORM_DIR}", workspace: 'default', planFile: 'tfplan', varsFile: 'dev.tfvars')
                         }
                     }
                 }
@@ -190,11 +194,7 @@ pipeline {
                     script {
                         dir(TERRAFORM_DIR) {
                             echo 'Applying Terraform changes...'
-                            sh """
-                                export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
-                                export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
-                                terraform apply -auto-approve -var-file=dev.tfvars tfplan
-                            """
+                            terraformApply(directory: "${TERRAFORM_DIR}", planFile: 'tfplan')
                         }
                     }
                 }
@@ -211,4 +211,5 @@ pipeline {
         }
     }
 }
+
 
