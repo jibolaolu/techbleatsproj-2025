@@ -111,7 +111,7 @@ pipeline {
                     checkout([$class: 'GitSCM',
                         branches: [[name: '*/master']],
                         userRemoteConfigs: [[
-                            //credentialsId: 'github-credentials',  // Ensure GitHub credentials exist
+                            //credentialsId: 'github-credentials',
                             url: 'https://github.com/jibolaolu/techbleatsproj-2025.git'
                         ]]
                     ])
@@ -130,7 +130,11 @@ pipeline {
                     script {
                         dir(TERRAFORM_DIR) {
                             echo 'Initializing Terraform...'
-                            terraform init
+                            sh """
+                                export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
+                                export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+                                terraform init
+                            """
                         }
                     }
                 }
@@ -142,7 +146,7 @@ pipeline {
                 script {
                     dir(TERRAFORM_DIR) {
                         echo 'Validating Terraform configuration...'
-                        terraform validate
+                        sh 'terraform validate'
                     }
                 }
             }
@@ -159,7 +163,11 @@ pipeline {
                     script {
                         dir(TERRAFORM_DIR) {
                             echo 'Running Terraform Plan...'
-                            terraform plan -var-file="dev.tfvars" -out=tfplan
+                            sh """
+                                export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
+                                export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+                                terraform plan -var-file=dev.tfvars -out=tfplan
+                            """
                         }
                     }
                 }
@@ -194,7 +202,11 @@ pipeline {
                     script {
                         dir(TERRAFORM_DIR) {
                             echo 'Applying Terraform changes...'
-                            terraform apply -auto-approve -var-file="dev.tfvars" tfplan
+                            sh """
+                                export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
+                                export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+                                terraform apply -auto-approve -var-file=dev.tfvars tfplan
+                            """
                         }
                     }
                 }
@@ -211,6 +223,7 @@ pipeline {
         }
     }
 }
+
 
 
 
