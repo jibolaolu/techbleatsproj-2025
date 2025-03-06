@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_REGION = 'eu-west-2'  // Change to your AWS region
-        TERRAFORM_DIR = 'terraform/'  // Change to the directory containing your Terraform code
+        TERRAFORM_DIR = './terraform/'  // Change to the directory containing your Terraform code
     }
 
     stages {
