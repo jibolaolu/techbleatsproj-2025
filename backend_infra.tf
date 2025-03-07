@@ -4,6 +4,6 @@ terraform {
     key    = "techbleats/infra.tfstate"
     region = "eu-west-2"
     encrypt = true
-    dynamodb_table = var.dynamo_table
+    dynamodb_table = "terraform-states-table"
   }
 }
