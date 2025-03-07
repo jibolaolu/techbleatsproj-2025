@@ -118,7 +118,7 @@ pipeline {
                         sh """
                             export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
                             export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
-                            terraform destroy -auto-approve -var-file=${env.TFVARS_FILE}
+                            terraform destroy -auto-approve tfplan
                         """
                     } else {
                         echo "⚠️ Invalid action selected. Pipeline exiting."
