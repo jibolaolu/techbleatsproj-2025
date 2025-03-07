@@ -111,7 +111,7 @@ pipeline {
                         sh """
                             export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
                             export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
-                            terraform apply -auto-approve -var-file=${env.TFVARS_FILE} tfplan
+                            terraform apply -auto-approve tfplan
                         """
                     } else if (env.SELECTED_ACTION == 'Destroy') {
                         echo "Destroying Terraform for ${env.SELECTED_ENV}..."
