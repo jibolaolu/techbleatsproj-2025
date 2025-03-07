@@ -69,17 +69,6 @@ resource "aws_lb_listener_rule" "backend_rule" {
   }
 }
 
-# resource "aws_lb_listener" "grafana_listener" {
-#   load_balancer_arn = aws_lb.tcs-alb.arn
-#   port              = 80
-#   protocol          = "HTTP"
-#
-#   default_action {
-#     type             = "forward"
-#     target_group_arn = aws_lb_target_group.grafana.arn
-#   }
-# }
-
 resource "aws_lb_target_group" "grafana" {
   name        = "grafana-tg"
   port        = 3000

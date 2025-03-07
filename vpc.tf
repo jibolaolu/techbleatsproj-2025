@@ -9,4 +9,6 @@ resource "aws_internet_gateway" "gw" {
   tags = merge(local.common_tags, { Name = "${local.name_prefix}-IGW" })
 }
 
-resource "aws_eip" "nat" {}
+resource "aws_eip" "nat" {
+  tags = merge(local.common_tags, { Name = "${local.name_prefix}-Nat-GW" })
+}
