@@ -103,13 +103,29 @@ pipeline {
     }
 
     stages {
+        stage('User Selection: Environment') {
+            steps {
+                script {
+                    env.SELECTED_ENV = input(
+                        id: 'environmentSelection',
+                        message: 'Select the deployment environment:',
+                        parameters: [
+                            choice(name: 'Environment', choices: ['dev', 'prod'], description: 'Select the environment')
+                        ]
+                    )
+                    env.TFVARS_FILE = "${env.SELECTED_ENV}.tfvars"  // Use the selected tfvars file
+                    echo "User selected environment: ${env.SELECTED_ENV}"
+                }
+            }
+        }
+
         stage('Checkout Code') {
             steps {
                 script {
                     echo 'Checking out source code...'
                     checkout([$class: 'GitSCM',
                         branches: [[name: '*/master']],
-                        extensions: [[$class: 'WipeWorkspace']],
+                        extensions: [[$class: 'WipeWorkspace']],  // ✅ Ensure clean checkout
                         userRemoteConfigs: [[
                             credentialsId: 'github-credentials',
                             url: 'https://github.com/jibolaolu/techbleatsproj-2025.git'
@@ -122,9 +138,9 @@ pipeline {
         stage('Verify Terraform Files') {
             steps {
                 script {
-                    echo 'Listing repository root...'
-                    sh 'ls -l'  // ✅ Ensure dev.tfvars and other Terraform files exist
-                    sh 'cat dev.tfvars || echo "⚠️ WARNING: dev.tfvars NOT FOUND!"'
+                    echo "Using Variables File: ${env.TFVARS_FILE}"
+                    sh 'ls -l'  // ✅ Check if tfvars files exist
+                    sh "cat ${env.TFVARS_FILE} || echo '⚠️ WARNING: ${env.TFVARS_FILE} NOT FOUND!'"
                 }
             }
         }
@@ -158,44 +174,53 @@ pipeline {
                     secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
                 ]]) {
                     script {
-                        echo 'Running Terraform Plan...'
+                        echo "Running Terraform Plan for ${env.SELECTED_ENV}..."
                         sh """
                             export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
                             export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
-                            terraform plan -var-file=dev.tfvars -out=tfplan
+                            terraform plan -var-file=${env.TFVARS_FILE} -out=tfplan
                         """
                     }
                 }
             }
         }
 
-        stage('User Action: Apply or Destroy') {
+        stage('User Selection: Apply or Destroy') {
             steps {
                 script {
-                    def userChoice = input(
-                        id: 'actionChoice',
-                        message: 'What action would you like to perform?',
-                        parameters: [choice(name: 'Action', choices: ['Apply', 'Destroy', 'End Pipeline'], description: 'Select an action')]
+                    env.SELECTED_ACTION = input(
+                        id: 'actionSelection',
+                        message: 'Terraform Plan completed. Select Apply or Destroy:',
+                        parameters: [
+                            choice(name: 'Action', choices: ['Apply', 'Destroy'], description: 'Select Apply or Destroy')
+                        ]
                     )
+                    echo "User selected action: ${env.SELECTED_ACTION}"
+                }
+            }
+        }
 
-                    if (userChoice == 'Apply') {
-                        echo 'User chose to apply Terraform changes.'
+        stage('Terraform Apply or Destroy') {
+            steps {
+                script {
+                    if (env.SELECTED_ACTION == 'Apply') {
+                        echo "Applying Terraform for ${env.SELECTED_ENV}..."
                         sh """
                             export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
                             export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
-                            terraform apply -auto-approve -var-file=dev.tfvars tfplan
+                            terraform apply -auto-approve -var-file=${env.TFVARS_FILE} tfplan
                         """
-                    } else if (userChoice == 'Destroy') {
-                        echo 'User chose to destroy the Terraform infrastructure.'
+                    } else if (env.SELECTED_ACTION == 'Destroy') {
+                        echo "Destroying Terraform for ${env.SELECTED_ENV}..."
                         sh """
                             export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
                             export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
-                            terraform destroy -auto-approve -var-file=dev.tfvars
+                            terraform destroy -auto-approve -var-file=${env.TFVARS_FILE}
                         """
                     } else {
-                        echo 'User chose to end the pipeline. Exiting...'
+                        echo "⚠️ Invalid action selected. Pipeline exiting."
                         currentBuild.result = 'ABORTED'
-                        error('Pipeline stopped by user decision.')
+                        error('Pipeline stopped due to invalid action.')
                     }
                 }
             }
