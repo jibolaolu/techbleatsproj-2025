@@ -15,7 +15,7 @@ resource "aws_iam_role" "tbs_ecs_task_execution_role" {
 
 
 
-resource "aws_iam_policy" "ecs_exec_policy" {
+resource "aws_iam_policy" "tbs_ecs_exec_policy" {
   name        = "ecsExecPolicy"
   description = "Policy for ECS Exec command and logging"
 
@@ -67,9 +67,9 @@ resource "aws_iam_policy" "ecs_exec_policy" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
+resource "aws_iam_role_policy_attachment" "tbs_ecs_task_execution_role_policy" {
   role       = aws_iam_role.tbs_ecs_task_execution_role.name
-  policy_arn = aws_iam_policy.ecs_exec_policy.arn
+  policy_arn = aws_iam_policy.tbs_ecs_exec_policy.arn
 }
 
 resource "aws_iam_role" "ecs_task_role" {
@@ -109,7 +109,7 @@ resource "aws_iam_policy" "ecs_task_role_policy" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_task_role_attachment" {
+resource "aws_iam_role_policy_attachment" "tbs_ecs_task_role_attachment" {
   role       = aws_iam_role.ecs_task_role.name
   policy_arn = aws_iam_policy.ecs_task_role_policy.arn
 }
