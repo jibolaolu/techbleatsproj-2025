@@ -59,6 +59,13 @@ resource "aws_security_group" "backend_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   tags = merge(local.common_tags, { Name = "${local.name_prefix}-backend-sg" })
 }
 
@@ -71,6 +78,17 @@ resource "aws_security_group_rule" "backend_ingress_frontend" {
   cidr_blocks       = ["0.0.0.0/0"]
   description       = "Allow frontend traffic"
 }
+
+resource "aws_security_group_rule" "allow_alb_health_check" {
+  type                     = "ingress"
+  from_port                = 8000
+  to_port                  = 8000
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.backend_sg.id
+  source_security_group_id = aws_security_group.alb_sg.id  # ✅ Allow ALB traffic
+  description              = "Allow ALB health checks"
+}
+
 
 
 resource "aws_security_group_rule" "backend_egress_prometheus" {
