@@ -11,8 +11,8 @@ resource "aws_ecs_task_definition" "prometheus" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = 512
   memory                   = 1024
-  execution_role_arn       = aws_iam_role.tbs_ecs_task_execution_role.arn
-  task_role_arn            = aws_iam_role.grafana_ecs_task_role.arn
+  execution_role_arn       = aws_iam_role.tbs_ecs_execution_role.arn
+  #task_role_arn            = aws_iam_role.grafana_ecs_task_role.arn
 
   container_definitions = jsonencode([
     {
@@ -67,8 +67,8 @@ resource "aws_ecs_task_definition" "grafana" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = 512
   memory                   = 1024
-  execution_role_arn       = aws_iam_role.tbs_ecs_task_execution_role.arn
-  task_role_arn            = aws_iam_role.grafana_ecs_task_role.arn
+  execution_role_arn       = aws_iam_role.tbs_ecs_execution_role.arn
+  #task_role_arn            = aws_iam_role.grafana_ecs_task_role.arn
 
   container_definitions = jsonencode([
     {
