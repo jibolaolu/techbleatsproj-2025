@@ -275,6 +275,31 @@ pipeline {
             }
         }
 
+        stage('Terraform Init & Refresh') {
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws_credentials',
+                    accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                ]]) {
+                    script {
+                        echo 'Initializing Terraform...'
+                        sh """
+                            export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
+                            export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+                            terraform init
+                        """
+
+                        if (env.STATEFILE_EXISTS == "true") {
+                            echo "Refreshing Terraform state..."
+                            sh "terraform refresh -var-file=${env.TFVARS_FILE}"
+                        }
+                    }
+                }
+            }
+        }
+
         stage('User Selection: Action (Plan, Plan and Approve, Destroy)') {
             steps {
                 script {
