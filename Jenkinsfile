@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_REGION = 'eu-west-2'
-        S3_BUCKET = "seunadio-tfstate "  // ✅ Replace with your actual S3 bucket name
+        S3_BUCKET = "seunadio-tfstate"  // ✅ Replace with your actual S3 bucket name
         STATE_FILE_KEY = "techbleats/infra.tfstate"
     }
 
@@ -30,7 +30,7 @@ pipeline {
                     echo 'Checking out source code...'
                     checkout([$class: 'GitSCM',
                         branches: [[name: '*/master']],
-                        extensions: [[$class: 'WipeWorkspace']],  // ✅ Ensure clean checkout
+                        extensions: [[$class: 'WipeWorkspace']],
                         userRemoteConfigs: [[
                             credentialsId: 'github-credentials',
                             url: 'https://github.com/jibolaolu/techbleatsproj-2025.git'
@@ -104,20 +104,27 @@ pipeline {
                 expression { env.SELECTED_ACTION == 'Plan' }
             }
             steps {
-                script {
-                    echo "Running Terraform Plan for ${env.SELECTED_ENV}..."
-                    sh """
-                        export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
-                        export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
-                        terraform plan -var-file=${env.TFVARS_FILE} -out=tfplan
-                    """
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws_credentials',
+                    accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                ]]) {
+                    script {
+                        echo "Running Terraform Plan for ${env.SELECTED_ENV}..."
+                        sh """
+                            export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
+                            export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+                            terraform plan -var-file=${env.TFVARS_FILE} -out=tfplan
+                        """
 
-                    // Ask user if they want to apply after a successful plan
-                    env.APPLY_AFTER_PLAN = input(
-                        id: 'applyAfterPlan',
-                        message: 'Terraform Plan completed. Do you want to apply the changes?',
-                        parameters: [choice(name: 'Proceed', choices: ['Yes', 'No'], description: 'Select Yes to apply or No to cancel')]
-                    )
+                        // Ask user if they want to apply after a successful plan
+                        env.APPLY_AFTER_PLAN = input(
+                            id: 'applyAfterPlan',
+                            message: 'Terraform Plan completed. Do you want to apply the changes?',
+                            parameters: [choice(name: 'Proceed', choices: ['Yes', 'No'], description: 'Select Yes to apply or No to cancel')]
+                        )
+                    }
                 }
             }
         }
@@ -127,13 +134,20 @@ pipeline {
                 expression { env.SELECTED_ACTION == 'Apply' || (env.SELECTED_ACTION == 'Plan' && env.APPLY_AFTER_PLAN == 'Yes') }
             }
             steps {
-                script {
-                    echo "Applying Terraform for ${env.SELECTED_ENV}..."
-                    sh """
-                        export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
-                        export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
-                        terraform apply -auto-approve -var-file=${env.TFVARS_FILE} tfplan
-                    """
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws_credentials',
+                    accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                ]]) {
+                    script {
+                        echo "Applying Terraform for ${env.SELECTED_ENV}..."
+                        sh """
+                            export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
+                            export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+                            terraform apply -auto-approve tfplan
+                        """
+                    }
                 }
             }
         }
@@ -145,12 +159,19 @@ pipeline {
             steps {
                 script {
                     if (env.STATEFILE_EXISTS == "true") {
-                        echo "Destroying Terraform for ${env.SELECTED_ENV}..."
-                        sh """
-                            export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
-                            export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
-                            terraform destroy -auto-approve -var-file=${env.TFVARS_FILE}
-                        """
+                        withCredentials([[
+                            $class: 'AmazonWebServicesCredentialsBinding',
+                            credentialsId: 'aws_credentials',
+                            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                        ]]) {
+                            echo "Destroying Terraform for ${env.SELECTED_ENV}..."
+                            sh """
+                                export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
+                                export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+                                terraform destroy -auto-approve tfplan
+                            """
+                        }
                     } else {
                         echo "⚠️ No Terraform statefile found. Nothing to destroy."
                     }
