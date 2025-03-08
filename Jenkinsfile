@@ -42,18 +42,30 @@ pipeline {
 
         stage('Check for Existing Terraform State') {
             steps {
-                script {
-                    def stateExists = sh(
-                        script: "aws s3 ls s3://${S3_BUCKET}/${STATE_FILE_KEY} | wc -l",
-                        returnStdout: true
-                    ).trim()
+                withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws_credentials',
+                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                ]]) {
+                    script {
+                        echo "🔍 Checking if Terraform state exists in S3..."
+                        def stateExists = sh(
+                            script: """
+                                export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
+                                export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+                                aws s3 ls s3://${S3_BUCKET}/${STATE_FILE_KEY} | wc -l
+                            """,
+                            returnStdout: true
+                        ).trim()
 
-                    if (stateExists == "1") {
-                        echo "✅ Statefile exists in S3. Terraform is tracking resources."
-                        env.STATEFILE_EXISTS = "true"
-                    } else {
-                        echo "⚠️ No statefile found in S3. Terraform will start fresh."
-                        env.STATEFILE_EXISTS = "false"
+                        if (stateExists == "1") {
+                            echo "✅ Statefile exists in S3. Terraform is tracking resources."
+                            env.STATEFILE_EXISTS = "true"
+                        } else {
+                            echo "⚠️ No statefile found in S3. Terraform will start fresh."
+                            env.STATEFILE_EXISTS = "false"
+                        }
                     }
                 }
             }
