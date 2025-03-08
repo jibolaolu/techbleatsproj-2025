@@ -246,7 +246,7 @@ pipeline {
             }
         }
 
-        stage('Check for Existing Terraform State') {
+        stage('Check for Existing Terraform State & Lock') {
             steps {
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
@@ -255,7 +255,8 @@ pipeline {
                     secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
                 ]]) {
                     script {
-                        echo "🔍 Checking if Terraform state exists in S3..."
+                        echo "🔍 Checking if Terraform state exists and if it's locked..."
+
                         def stateExists = sh(
                             script: """
                                 export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
@@ -266,8 +267,26 @@ pipeline {
                         ).trim()
 
                         if (stateExists == "1") {
-                            echo "✅ Statefile exists in S3. Terraform is tracking resources."
+                            echo "✅ Statefile exists in S3."
                             env.STATEFILE_EXISTS = "true"
+
+                            def lockCheck = sh(
+                                script: """
+                                    export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
+                                    export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+                                    aws dynamodb scan --table-name terraform-lock-table --query "Count"
+                                """,
+                                returnStdout: true
+                            ).trim()
+
+                            if (lockCheck != "0") {
+                                echo "🚨 Terraform state is locked! Running 'terraform init -lock=false' to unlock."
+                                sh """
+                                    terraform init -lock=false
+                                """
+                            } else {
+                                echo "✅ No lock detected. Proceeding as normal."
+                            }
                         } else {
                             echo "⚠️ No statefile found in S3. Terraform will start fresh."
                             env.STATEFILE_EXISTS = "false"
