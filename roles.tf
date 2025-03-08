@@ -50,8 +50,8 @@ resource "aws_iam_policy" "tbs_ecs_exec_policy" {
         Resource = "*"
       },
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow"
+        Action = [
           "ecr:GetAuthorizationToken",
           "ecr:BatchCheckLayerAvailability",
           "ecr:GetDownloadUrlForLayer",
@@ -87,7 +87,7 @@ resource "aws_iam_role" "grafana_ecs_role" {
 }
 
 resource "aws_iam_policy" "grafana_ecs_policy" {
-  name        = "${local.name_prefix}-ecs-task-role-policy"
+  name        = "${local.name_prefix}-ecs-grafana-role-policy"
   description = "Policy for ECS task role to allow Prometheus & Grafana to access AWS services"
   policy = jsonencode({
     Version = "2012-10-17",

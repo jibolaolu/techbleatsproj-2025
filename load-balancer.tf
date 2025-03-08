@@ -91,7 +91,7 @@ resource "aws_lb_listener_rule" "grafana" {
 
   condition {
     path_pattern {
-      values = ["/grafana*"]  # ✅ Use path-based routing
+      values = ["/grafana*"] # ✅ Use path-based routing
     }
   }
   action {

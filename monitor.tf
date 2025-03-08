@@ -23,11 +23,11 @@ resource "aws_ecs_task_definition" "prometheus" {
       essential = true
       environment = [
         { name = "REDIS_URL", value = "${aws_elasticache_replication_group.redis.primary_endpoint_address}:6379" },
-#         { name = "HTTP_PROXY", value = "http://${aws_lb.tcs-alb.dns_name}/squid-proxy" },
-#         { name = "HTTPS_PROXY", value = "http://${aws_lb.tcs-alb.dns_name}/squid-proxy" },
-#         { name = "HTTP_PROXY", value = "http://${aws_lb.tcs-alb.dns_name}:3128" },
-#         { name = "HTTPS_PROXY", value = "http://${aws_lb.tcs-alb.dns_name}:3128" },
-#         { name = "NO_PROXY", value = "169.254.169.254,localhost,.amazonaws.com" }
+        #         { name = "HTTP_PROXY", value = "http://${aws_lb.tcs-alb.dns_name}/squid-proxy" },
+        #         { name = "HTTPS_PROXY", value = "http://${aws_lb.tcs-alb.dns_name}/squid-proxy" },
+        #         { name = "HTTP_PROXY", value = "http://${aws_lb.tcs-alb.dns_name}:3128" },
+        #         { name = "HTTPS_PROXY", value = "http://${aws_lb.tcs-alb.dns_name}:3128" },
+        #         { name = "NO_PROXY", value = "169.254.169.254,localhost,.amazonaws.com" }
       ]
       portMappings = [
         {
@@ -72,7 +72,7 @@ resource "aws_ecs_task_definition" "grafana" {
 
   container_definitions = jsonencode([
     {
-      name      = "grafana"
+      name = "grafana"
       #image     = "grafana/grafana:latest"
       image     = "${var.grafana_image}:latest"
       cpu       = 512
@@ -87,7 +87,7 @@ resource "aws_ecs_task_definition" "grafana" {
       ]
       environment = [
         { name = "GF_SERVER_ROOT_URL", value = "http://${var.subdomain}.${var.domain_name}/grafana" },
-        { name = "GF_SERVER_SERVE_FROM_SUB_PATH", value = "true" }  # ✅ Ensure Grafana serves from /grafana path
+        { name = "GF_SERVER_SERVE_FROM_SUB_PATH", value = "true" } # ✅ Ensure Grafana serves from /grafana path
       ]
       logConfiguration = {
         logDriver = "awslogs"

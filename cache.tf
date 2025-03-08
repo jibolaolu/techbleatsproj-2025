@@ -6,14 +6,14 @@ resource "aws_ecs_task_definition" "tbs-cache" {
   cpu                      = "256"
   memory                   = "512"
   container_definitions = jsonencode([{
-    name   = "${local.name_prefix}-cache"
-    image  = "${var.cache-image}:latest"
-    memory = 512
-    cpu    = 256
+    name      = "${local.name_prefix}-cache"
+    image     = "${var.cache-image}:latest"
+    memory    = 512
+    cpu       = 256
     essential = true
     environment = [
-#
-      ]
+      #
+    ]
     portMappings = [{
       containerPort = 8080
       hostPort      = 8080

@@ -51,7 +51,7 @@ resource "aws_security_group" "backend_sg" {
     description     = "Allow traffic from ALB SG"
   }
 
-  tags   = merge(local.common_tags, { Name = "${local.name_prefix}-backend-sg" })
+  tags = merge(local.common_tags, { Name = "${local.name_prefix}-backend-sg" })
 }
 
 resource "aws_security_group_rule" "backend_ingress_frontend" {
@@ -160,7 +160,7 @@ resource "aws_security_group" "redis_sg" {
 resource "aws_security_group" "prometheus" {
   name   = "${local.name_prefix}-prometheus-sg"
   vpc_id = aws_vpc.main.id
-  tags = merge(local.common_tags, { Name = "${local.name_prefix}-prometheus-sg" })
+  tags   = merge(local.common_tags, { Name = "${local.name_prefix}-prometheus-sg" })
 }
 resource "aws_security_group_rule" "ecs_ingress_prometheus" {
   type              = "ingress"
@@ -189,9 +189,9 @@ resource "aws_security_group" "grafana_sg" {
   vpc_id = aws_vpc.main.id
 
   ingress {
-    from_port   = 3000
-    to_port     = 3000
-    protocol    = "tcp"
+    from_port       = 3000
+    to_port         = 3000
+    protocol        = "tcp"
     security_groups = [aws_security_group.alb_sg.id]
   }
   egress {
