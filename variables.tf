@@ -56,6 +56,6 @@ variable "squid-image" {}
 variable "prometheus-image" {}
 variable "grafana_image" {}
 variable "dynamo_table" {
-  type = string
+  type    = string
   default = "terraform-states-table"
 }

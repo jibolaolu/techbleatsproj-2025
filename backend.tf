@@ -16,11 +16,11 @@ resource "aws_ecs_task_definition" "tbs-backend" {
       essential = true
       environment = [
         { name = "REDIS_URL", value = "${aws_elasticache_replication_group.redis.primary_endpoint_address}:6379" },
-#         { name = "HTTP_PROXY", value = "http://${aws_lb.tcs-alb.dns_name}/squid-proxy" },
-#         { name = "HTTPS_PROXY", value = "http://${aws_lb.tcs-alb.dns_name}/squid-proxy" },
-#         { name = "HTTP_PROXY", value = "http://${aws_lb.tcs-alb.dns_name}:3128" },
-#         { name = "HTTPS_PROXY", value = "http://${aws_lb.tcs-alb.dns_name}:3128" },
-#         { name = "NO_PROXY", value = "169.254.169.254,localhost,.amazonaws.com" }
+        #         { name = "HTTP_PROXY", value = "http://${aws_lb.tcs-alb.dns_name}/squid-proxy" },
+        #         { name = "HTTPS_PROXY", value = "http://${aws_lb.tcs-alb.dns_name}/squid-proxy" },
+        #         { name = "HTTP_PROXY", value = "http://${aws_lb.tcs-alb.dns_name}:3128" },
+        #         { name = "HTTPS_PROXY", value = "http://${aws_lb.tcs-alb.dns_name}:3128" },
+        #         { name = "NO_PROXY", value = "169.254.169.254,localhost,.amazonaws.com" }
       ]
       portMappings = [
         {
