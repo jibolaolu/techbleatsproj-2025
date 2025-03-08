@@ -115,7 +115,7 @@ resource "aws_iam_role_policy_attachment" "tbs_ecs_role_attachment" {
 ###### ECS TASK EXECUTION ROLE ######
 
 resource "aws_iam_role" "tbs_task_execution_role" {
-  name = "ecs-task-role-techbleats"
+  name = "${local.name_prefix}-task-role-techbleats"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
