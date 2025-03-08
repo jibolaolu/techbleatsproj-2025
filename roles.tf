@@ -13,10 +13,8 @@ resource "aws_iam_role" "tbs_ecs_task_execution_role" {
   tags = merge(local.common_tags, { Name = "${local.name_prefix}-exec-role" })
 }
 
-
-
 resource "aws_iam_policy" "tbs_ecs_exec_policy" {
-  name        = "ecsExecPolicy"
+  name        = "${local.name_prefix}-ecsExecPolicy"
   description = "Policy for ECS Exec command and logging"
 
   policy = jsonencode({
@@ -72,7 +70,7 @@ resource "aws_iam_role_policy_attachment" "tbs_ecs_task_execution_role_policy" {
   policy_arn = aws_iam_policy.tbs_ecs_exec_policy.arn
 }
 
-resource "aws_iam_role" "ecs_task_role" {
+resource "aws_iam_role" "grafana_ecs_task_role" {
   name = "ecs-task-role-prometheus-grafana"
 
   assume_role_policy = jsonencode({
@@ -89,7 +87,7 @@ resource "aws_iam_role" "ecs_task_role" {
 }
 
 resource "aws_iam_policy" "ecs_task_role_policy" {
-  name        = "ecs-task-role-policy"
+  name        = "${local.name_prefix}-ecs-task-role-policy"
   description = "Policy for ECS task role to allow Prometheus & Grafana to access AWS services"
   policy = jsonencode({
     Version = "2012-10-17",
@@ -110,6 +108,6 @@ resource "aws_iam_policy" "ecs_task_role_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "tbs_ecs_task_role_attachment" {
-  role       = aws_iam_role.ecs_task_role.name
+  role       = aws_iam_role.grafana_ecs_task_role.name
   policy_arn = aws_iam_policy.ecs_task_role_policy.arn
 }
