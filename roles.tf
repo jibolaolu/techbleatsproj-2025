@@ -71,7 +71,7 @@ resource "aws_iam_role_policy_attachment" "tbs_ecs_task_execution_role_policy" {
 }
 
 resource "aws_iam_role" "grafana_ecs_task_role" {
-  name = "ecs-task-role-prometheus-grafana"
+  name = "${local.name_prefix}-promgrafa-tsk-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -83,7 +83,7 @@ resource "aws_iam_role" "grafana_ecs_task_role" {
       Action = "sts:AssumeRole"
     }]
   })
-  tags = merge(local.common_tags, { Name = "${local.name_prefix}-grafana" })
+  tags = merge(local.common_tags, { Name = "${local.name_prefix}-promgrafa-tsk-role" })
 }
 
 resource "aws_iam_policy" "ecs_task_role_policy" {
