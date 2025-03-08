@@ -374,22 +374,29 @@ pipeline {
                 expression { env.SELECTED_ACTION == 'Destroy' }
             }
             steps {
-                script {
-                    if (env.STATEFILE_EXISTS == "true") {
-                        echo "Destroying Terraform for ${env.SELECTED_ENV}..."
-                        sh """
-                            export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
-                            export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
-                            terraform refresh
-                            terraform destroy -auto-approve -var-file=${env.TFVARS_FILE}
-                        """
-                    } else {
-                        echo "⚠️ No Terraform statefile found. Nothing to destroy."
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws_credentials',
+                    accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                ]]) {
+                    script {
+                        if (env.STATEFILE_EXISTS == "true") {
+                            echo "Destroying Terraform for ${env.SELECTED_ENV}..."
+                            sh """
+                                export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
+                                export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+                                terraform refresh
+                                terraform destroy -auto-approve -var-file=${env.TFVARS_FILE}
+                            """
+                        } else {
+                            echo "⚠️ No Terraform statefile found. Nothing to destroy."
+                        }
                     }
                 }
             }
         }
-    }
+
 
     post {
         success {
