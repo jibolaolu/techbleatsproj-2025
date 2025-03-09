@@ -36,7 +36,7 @@ variable "route53_zone_id" {
 
 variable "instance_ami" {
   type    = string
-  default = "ami-05bca204debf5aaeb"
+  default = "ami-08ace71784e9fd346"
 }
 
 variable "keypair" {
