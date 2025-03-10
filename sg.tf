@@ -12,6 +12,14 @@ resource "aws_security_group" "frontend_sg" {
   }
 
   ingress {
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb_sg.id]
+    description     = "Allow traffic from ALB SG"
+  }
+
+  ingress {
     from_port       = 9100
     to_port         = 9100
     protocol        = "tcp"

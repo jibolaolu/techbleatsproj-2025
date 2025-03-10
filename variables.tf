@@ -59,3 +59,8 @@ variable "dynamo_table" {
   type    = string
   default = "terraform-states-table"
 }
+
+variable "ssl_certificate" {
+  type    = string
+  default = ""
+}
