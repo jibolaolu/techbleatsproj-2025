@@ -26,6 +26,7 @@ resource "aws_lb_target_group" "frontend_tg" {
   tags = merge(local.common_tags, { Name = "${local.name_prefix}-frontend-target-group" })
 }
 
+# ✅ HTTP Listener (Redirects to HTTPS)
 resource "aws_lb_listener" "http_listener" {
   load_balancer_arn = aws_lb.tcs-alb.arn
   port              = 80
@@ -33,7 +34,6 @@ resource "aws_lb_listener" "http_listener" {
 
   default_action {
     type = "redirect"
-
     redirect {
       protocol    = "HTTPS"
       port        = "443"
@@ -42,7 +42,8 @@ resource "aws_lb_listener" "http_listener" {
   }
 }
 
-resource "aws_lb_listener" "https_listener" {
+# ✅ HTTPS Listener (Frontend - Port 80)
+resource "aws_lb_listener" "https_listener_frontend" {
   load_balancer_arn = aws_lb.tcs-alb.arn
   port              = 443
   protocol          = "HTTPS"
@@ -50,7 +51,7 @@ resource "aws_lb_listener" "https_listener" {
   certificate_arn   = var.ssl_certificate
 
   default_action {
-    type = "forward"
+    type             = "forward"
     target_group_arn = aws_lb_target_group.frontend_tg.arn
   }
 }
@@ -71,6 +72,7 @@ resource "aws_lb_target_group" "backend_tg" {
     matcher             = "200"
   }
 }
+
 
 #Route "/api/*" to backend target group
 resource "aws_lb_listener_rule" "backend_rule" {
