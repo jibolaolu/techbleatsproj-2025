@@ -47,12 +47,8 @@ resource "aws_lb_listener" "https_listener_frontend" {
   certificate_arn   = var.ssl_certificate
 
   default_action {
-    type = "redirect"
-    redirect {
-      protocol    = "HTTP"
-      port        = "80"
-      status_code = "HTTP_301"
-    }
+    type = "forward"
+    target_group_arn = aws_lb_target_group.frontend_tg.arn
   }
 }
 
