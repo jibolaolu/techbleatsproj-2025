@@ -10,6 +10,7 @@ resource "aws_ecs_task_definition" "tbs-frontend" {
     image  = "${var.front-end-image}:latest"
     memory = 1024
     cpu    = 512
+    essential = true
     portMappings = [{
       containerPort = 80
       hostPort      = 80
