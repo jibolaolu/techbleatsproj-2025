@@ -389,35 +389,95 @@ pipeline {
                 }
             }
         }
-
         stage('Terraform Destroy') {
-            when {
-                expression { env.SELECTED_ACTION == 'Destroy' }
-            }
-            steps {
-                withCredentials([[
-                    $class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws_credentials',
-                    accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                ]]) {
-                    script {
-                        if (env.STATEFILE_EXISTS == "true") {
-                            echo "Destroying Terraform for ${env.SELECTED_ENV}..."
-                            sh """
-                                export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
-                                export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
-                                terraform refresh -var-file=${env.TFVARS_FILE}
-                                terraform destroy -auto-approve -var-file=${env.TFVARS_FILE}
-                            """
-                        } else {
-                            echo "⚠️ No Terraform statefile found. Nothing to destroy."
-                        }
+    when {
+        expression { env.SELECTED_ACTION == 'Destroy' }
+    }
+    steps {
+        withCredentials([[
+            $class: 'AmazonWebServicesCredentialsBinding',
+            credentialsId: 'aws_credentials',
+            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        ]]) {
+            script {
+                echo "🔍 Checking if Terraform state exists and if it's locked..."
+
+                def stateExists = sh(
+                    script: """
+                        export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
+                        export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+                        aws s3 ls s3://${S3_BUCKET}/${STATE_FILE_KEY} | wc -l
+                    """,
+                    returnStdout: true
+                ).trim()
+
+                if (stateExists == "1") {
+                    echo "✅ Statefile exists in S3."
+                    env.STATEFILE_EXISTS = "true"
+
+                    def lockCheck = sh(
+                        script: """
+                            export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
+                            export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+                            aws dynamodb scan --table-name terraform-states-table --query "Count"
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    if (lockCheck != "0") {
+                        echo "🚨 Terraform state is locked! Running 'terraform init -lock=false' to unlock."
+                        sh """
+                            terraform init -lock=false
+                        """
+                    } else {
+                        echo "✅ No lock detected. Proceeding as normal."
                     }
+
+                    echo "Destroying Terraform for ${env.SELECTED_ENV}..."
+                    sh """
+                        export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
+                        export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+                        terraform refresh -var-file=${env.TFVARS_FILE}
+                        terraform destroy -auto-approve -var-file=${env.TFVARS_FILE}
+                    """
+                } else {
+                    echo "⚠️ No Terraform statefile found. Nothing to destroy."
                 }
             }
         }
     }
+}
+
+
+//         stage('Terraform Destroy') {
+//             when {
+//                 expression { env.SELECTED_ACTION == 'Destroy' }
+//             }
+//             steps {
+//                 withCredentials([[
+//                     $class: 'AmazonWebServicesCredentialsBinding',
+//                     credentialsId: 'aws_credentials',
+//                     accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+//                     secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+//                 ]]) {
+//                     script {
+//                         if (env.STATEFILE_EXISTS == "true") {
+//                             echo "Destroying Terraform for ${env.SELECTED_ENV}..."
+//                             sh """
+//                                 export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
+//                                 export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+//                                 terraform refresh -var-file=${env.TFVARS_FILE}
+//                                 terraform destroy -auto-approve -var-file=${env.TFVARS_FILE}
+//                             """
+//                         } else {
+//                             echo "⚠️ No Terraform statefile found. Nothing to destroy."
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
 
     post {
         success {
